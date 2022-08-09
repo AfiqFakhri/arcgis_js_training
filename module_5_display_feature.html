@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <Title>ArcGIS API for JavaScript Tutorial</Title>
 
@@ -16,6 +17,7 @@
         width: 100%;
     }
 </style>
+
 <body>
     <div id="viewDiv"></div>
 
@@ -37,22 +39,23 @@
                 basemap: "streets-vector"
             });
 
-// Create a MapView instance (for 2D viewing) and reference the map instance
-const view = new MapView({
-    container: "viewDiv",
-    map: myMap,
-    zoom: 12, // Sets zoom level based on level of detail (LOD)
-    center: [101.70979, 3.15283] // Sets center point of view using longitude,latitude
-});
+            // Create a MapView instance (for 2D viewing) and reference the map instance
+            const view = new MapView({
+                container: "viewDiv",
+                map: myMap,
+                zoom: 12, // Sets zoom level based on level of detail (LOD)
+                center: [101.70979, 3.15283] // Sets center point of view using longitude,latitude
+            });
 
-// Add Feature Layer
-const featureLayer = new FeatureLayer({
-    url: "https://vm.map2u.com.my/server/rest/services/Hosted/Kuala_Lumpur_Building/FeatureServer/0"
-});
+            // Add Feature Layer
+            const featureLayer = new FeatureLayer({
+                url: "https://vm.map2u.com.my/server/rest/services/Hosted/Kuala_Lumpur_Building/FeatureServer/0"
+            });
 
-// Add feature layer to map
-myMap.add(featureLayer);
+            // Add feature layer to map
+            myMap.add(featureLayer);
         });
     </script>
 </body>
+
 </html>
