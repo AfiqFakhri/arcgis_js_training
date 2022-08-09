@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <Title>ArcGIS API for JavaScript Tutorial</Title>
+
+    <!-- ArcGIS JavaScript CSS -->
+    <link rel="stylesheet" href="https://js.arcgis.com/4.24/esri/themes/light/main.css">
+</head>
+<style>
+    html,
+    body,
+    #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+    }
+</style>
+
+<body>
+    <div id="viewDiv"></div>
+
+    <!-- ArcGIS JavaScript Library -->
+    <script src="https://js.arcgis.com/4.24/"></script>
+    <script>
+        // Load the Map and MapView modules
+        require([
+            "esri/Map",
+            "esri/views/MapView",
+            "esri/Graphic"
+        ], function (
+            Map,
+            MapView,
+            Graphic
+        ) {
+            // Create a Map instance
+            const myMap = new Map({
+                basemap: "streets-vector"
+            });
+
+            // Create a MapView instance (for 2D viewing) and reference the map instance
+            const view = new MapView({
+                container: "viewDiv",
+                map: myMap,
+                zoom: 15, // Sets zoom level based on level of detail (LOD)
+                center: [101.70979, 3.15283] // Sets center point of view using longitude,latitude
+            });
+
+            // Create a geometry (Polyline)
+            const geometryLine = {
+                type: "polyline", // Will draw a line
+                paths: [  // List points coordinate
+                    [101.71141, 3.15816],
+                    [101.69348, 3.14922]
+                ]
+            }
+
+            // Create a line symbol
+            const symbolLine = {
+                type: "simple-line",
+                color: [226, 119, 40], // RGB color values as an array
+                width: 4
+            }
+
+            // Create an attribute. The fields can be anything.
+            const attributesLine = {
+                name: "KLCC to Dataran Merdeka",
+                state: "Selangor",
+                length: "2.2KM"
+            }
+            
+            // Create Graphic object and assign geometry, line and attribute to it.
+            const graphicLine = new Graphic({
+                geometry: geometryLine,
+                symbol: symbolLine,
+                attributes: attributesLine,
+            });
+
+            // Add Graphic to view's default GraphicLayer.
+            view.graphics.add(graphicLine);
+        });
+    </script>
+</body>
+
+</html>
