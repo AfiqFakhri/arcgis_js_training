@@ -9,17 +9,40 @@
 </head>
 <style>
     html,
-    body,
-    #viewDiv {
+    body {
         padding: 0;
         margin: 0;
         height: 100%;
         width: 100%;
     }
+
+    #container {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #tableDiv {
+        padding: 5px;
+        height: 25%;
+        width: 100%;
+    }
+
+    #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 75%;
+        width: 100%;
+    }
 </style>
 
 <body>
-    <div id="viewDiv"></div>
+    <div id="container">
+        <div id="viewDiv"></div>
+        <div id="tableDiv"> </div>
+    </div>
 
     <!-- ArcGIS JavaScript Library -->
     <script src="https://js.arcgis.com/4.24/"></script>
@@ -28,15 +51,19 @@
         require([
             "esri/Map",
             "esri/views/MapView",
+            "esri/widgets/LayerList",
             "esri/layers/FeatureLayer",
+            "esri/widgets/FeatureTable",
             "esri/widgets/Editor",
-            "esri/widgets/Legend",
+            "esri/widgets/Legend"
         ], function (
             Map,
             MapView,
+            LayerList,
             FeatureLayer,
+            FeatureTable,
             Editor,
-            Legend,
+            Legend
         ) {
             // Create a Map instance
             const myMap = new Map({
@@ -51,30 +78,46 @@
                 center: [101.70979, 3.15283] // Sets center point of view using longitude,latitude
             });
 
-            // Add Feature Layer
-            const featureLayer = new FeatureLayer({
-                url: "https://vm.map2u.com.my/server/rest/services/Hosted/Kuala_Lumpur_Building/FeatureServer/0"
+            // Create LayerList instance
+            const layerList = new LayerList({
+                view: view,
             });
-            myMap.add(featureLayer);
 
-            // Editor Widget
+            // Add LayerList into MapView
+            view.ui.add(layerList, "top-right");
+
+            // Create Editor instancve
             const editor = new Editor({
-                view: view
+                view: view,
             });
 
-            // Add Editor Widget to MapView
             view.ui.add(editor, "top-right");
 
-            // Legend Widget
+            // Crate Legend instance
             const legend = new Legend({
                 view: view,
                 style: "card"
             });
 
-            view.ui.add(legend, "bottom-left");
+            view.ui.add(legend, "top-left");
+
+
+            // Add Feature Layer
+            const featureLayer = new FeatureLayer({
+                url: "https://vm.map2u.com.my/server/rest/services/Hosted/Kuala_Lumpur_Building/FeatureServer/0"
+            });
+
+            // Add feature layer to map
+            myMap.add(featureLayer);
+
+            // Create FeatureTable instance
+            const featureTable = new FeatureTable({
+                view: view,
+                container: document.getElementById("tableDiv"),
+                layer: featureLayer,
+            });
 
         });
-
     </script>
 </body>
 

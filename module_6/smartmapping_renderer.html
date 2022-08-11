@@ -9,17 +9,40 @@
 </head>
 <style>
     html,
-    body,
-    #viewDiv {
+    body {
         padding: 0;
         margin: 0;
         height: 100%;
         width: 100%;
     }
+
+    #container {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #tableDiv {
+        padding: 5px;
+        height: 25%;
+        width: 100%;
+    }
+
+    #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 75%;
+        width: 100%;
+    }
 </style>
 
 <body>
-    <div id="viewDiv"></div>
+    <div id="container">
+        <div id="viewDiv"></div>
+        <div id="tableDiv"> </div>
+    </div>
 
     <!-- ArcGIS JavaScript Library -->
     <script src="https://js.arcgis.com/4.24/"></script>
@@ -28,14 +51,18 @@
         require([
             "esri/Map",
             "esri/views/MapView",
+            "esri/widgets/LayerList",
             "esri/layers/FeatureLayer",
+            "esri/widgets/FeatureTable",
             "esri/widgets/Editor",
             "esri/widgets/Legend",
             "esri/smartMapping/renderers/type"
         ], function (
             Map,
             MapView,
+            LayerList,
             FeatureLayer,
+            FeatureTable,
             Editor,
             Legend,
             typeRendererCreator
@@ -53,12 +80,43 @@
                 center: [101.70979, 3.15283] // Sets center point of view using longitude,latitude
             });
 
+            // Create LayerList instance
+            const layerList = new LayerList({
+                view: view,
+            });
+
+            // Add LayerList into MapView
+            view.ui.add(layerList, "top-right");
+
+            // Create Editor instancve
+            const editor = new Editor({
+                view: view,
+            });
+
+            view.ui.add(editor, "top-right");
+
+            // Crate Legend instance
+            const legend = new Legend({
+                view: view,
+                style: "card"
+            });
+
+            view.ui.add(legend, "top-left");
+
             // Add Feature Layer
             const featureLayer = new FeatureLayer({
                 url: "https://vm.map2u.com.my/server/rest/services/Hosted/Kuala_Lumpur_Building/FeatureServer/0"
             });
 
-            // Create renderer parameter object 
+
+            // Create FeatureTable instance
+            const featureTable = new FeatureTable({
+                view: view,
+                container: document.getElementById("tableDiv"),
+                layer: featureLayer,
+            });
+
+            // Create SmartMapping renderer parameter object
             const typeParams = {
                 layer: featureLayer, // Layer instance
                 view: view, // MapView instance,
@@ -80,25 +138,7 @@
                 .catch((error) => {
                     console.error("there was an error: ", error);
                 });
-
-            // Editor Widget
-            const editor = new Editor({
-                view: view
-            });
-
-            // Add Editor Widget to MapView
-            view.ui.add(editor, "top-right");
-
-            // Legend Widget
-            const legend = new Legend({
-                view: view,
-                style: "card"
-            });
-
-            view.ui.add(legend, "bottom-left");
-
         });
-
     </script>
 </body>
 
