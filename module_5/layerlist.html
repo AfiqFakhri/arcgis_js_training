@@ -24,37 +24,37 @@
     <!-- ArcGIS JavaScript Library -->
     <script src="https://js.arcgis.com/4.24/"></script>
     <script>
-// Load the Map and MapView modules
-require([
-    "esri/Map",
-    "esri/views/MapView",
-    "esri/widgets/LayerList"
-], function (
-    Map,
-    MapView,
-    LayerList
-) {
-    // Create a Map instance
-    const myMap = new Map({
-        basemap: "streets-vector"
-    });
+        // Load the Map and MapView modules
+        require([
+            "esri/Map",
+            "esri/views/MapView",
+            "esri/widgets/LayerList"
+        ], function (
+            Map,
+            MapView,
+            LayerList
+        ) {
+            // Create a Map instance
+            const myMap = new Map({
+                basemap: "streets-vector"
+            });
 
-    // Create a MapView instance (for 2D viewing) and reference the map instance
-    const view = new MapView({
-        container: "viewDiv",
-        map: myMap,
-        zoom: 4, // Sets zoom level based on level of detail (LOD)
-        center: [101.69106, 2.93518] // Sets center point of view using longitude,latitude
-    });
+            // Create a MapView instance (for 2D viewing) and reference the map instance
+            const view = new MapView({
+                container: "viewDiv",
+                map: myMap,
+                zoom: 4, // Sets zoom level based on level of detail (LOD)
+                center: [101.69106, 2.93518] // Sets center point of view using longitude,latitude
+            });
 
-    // Create LayerList instance
-    const layerList = new LayerList({
-        view: view,
-    });
+            // Create LayerList instance
+            const layerList = new LayerList({
+                view: view,
+            });
 
-    // Add LayerList into MapView
-    view.ui.add(layerList, "top-right");
-});
+            // Add LayerList into MapView
+            view.ui.add(layerList, "top-right");
+        });
     </script>
 </body>
 

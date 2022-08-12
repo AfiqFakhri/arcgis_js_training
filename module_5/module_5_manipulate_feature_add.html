@@ -109,36 +109,36 @@
                 center: [101.70979, 3.15283] // Sets center point of view using longitude,latitude
             });
 
-// Add Feature Layer
-const featureLayer = new FeatureLayer({
-    url: "https://vm.map2u.com.my/server/rest/services/Hosted/Kuala_Lumpur_Building/FeatureServer/0"
-});
+            // Add Feature Layer
+            const featureLayer = new FeatureLayer({
+                url: "https://vm.map2u.com.my/server/rest/services/Hosted/Kuala_Lumpur_Building/FeatureServer/0"
+            });
 
-// Add feature layer to map
-myMap.add(featureLayer);
+            // Add feature layer to map
+            myMap.add(featureLayer);
 
-// Feature Layer Capabilities
+            // Feature Layer Capabilities
 
-// This variable store the user current operation 
-let currentOperation = null;
+            // This variable store the user current operation 
+            let currentOperation = null;
 
-// Action Buttons
-const addButton = document.getElementById("actionAdd");
+            // Action Buttons
+            const addButton = document.getElementById("actionAdd");
 
-// Buttons Event Listener
-// Add event listener to Add Feature button
-addButton.addEventListener("click", function(event) {
-    if (currentOperation == "add") {
-        // If current operation is add.
-        currentOperation = null;
-    } else {
-        currentOperation = "add";
-    }
-});
+            // Buttons Event Listener
+            // Add event listener to Add Feature button
+            addButton.addEventListener("click", function (event) {
+                if (currentOperation == "add") {
+                    // If current operation is add.
+                    currentOperation = null;
+                } else {
+                    currentOperation = "add";
+                }
+            });
 
-// MapView Event
-view.on("click", function(event) {
-});
+            // MapView Event
+            view.on("click", function (event) {
+            });
         });
     </script>
 </body>
