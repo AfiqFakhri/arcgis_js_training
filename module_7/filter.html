@@ -57,10 +57,10 @@
 <body>
     <div id="container">
         <div id="sidebar">
-            <h2>Highlight Feature by Type</h2>
+            <h2>Filter Features by Type</h2>
             <label for="buildingType">Building Types</label>
             <select id="buildingType" class="form-control mb-2"></select>
-            <button id="highlightButton" class="btn btn-primary mb-2">Highlight</button>
+            <button id="filterButton" class="btn btn-primary mb-2">Filter</button>
         </div>
         <div id="content">
             <div id="viewDiv"></div>
@@ -168,11 +168,11 @@
             });
 
             // Add feature table filter based MapView 
-            featureLayer.watch("loaded", function(event) {
-                reactiveUtils.when(function(){
+            featureLayer.watch("loaded", function (event) {
+                reactiveUtils.when(function () {
                     return view.stationary === false;
-                }, function() {
-                    if(view.extent) {
+                }, function () {
+                    if (view.extent) {
                         featureTable.filterGeometry = view.extent;
                     }
                 });
@@ -204,7 +204,7 @@
 
             // Get the elements related to 
             const buildingTypeInput = document.getElementById("buildingType");
-            const highlightButton = document.getElementById("highlightButton");
+            const filterButton = document.getElementById("filterButton");
 
             // Using uniqueValues, we will get the list of distinct value in layer field
             uniqueValues({
@@ -223,32 +223,18 @@
             });
 
             // Add event listener to filter button.
-            highlightButton.addEventListener("click", highlightBuildingType);
+            filterButton.addEventListener("click", filterBuildingType);
 
-            // highlight object
-            let highlightedObject;
-
-            function highlightBuildingType() {
+            function filterBuildingType() {
                 // Get selected building type
                 let buildingType = buildingTypeInput.value;
 
-                // Create Filter parameters
-                let query = featureLayer.createQuery();
-                query.where = `type = '${buildingType}'`;
+                // Create Filter expression
+                let expression = `type = '${buildingType}'`;
 
-                // Get object ids of features
-                featureLayer.queryObjectIds(query)
-                    .then(function (response) {
-                        if (highlightedObject) {
-                            highlightedObject.remove();
-                        }
-                        view.whenLayerView(featureLayer)
-                            .then(function (layer) {
-                                highlightedObject = layer.highlight(response)
-                            });
-                    });
+                // Get assign expression to feature layer
+                featureLayer.definitionExpression = expression;
             }
-
         });
     </script>
 </body>

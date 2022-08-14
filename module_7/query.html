@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <Title>ArcGIS API for JavaScript Tutorial</Title>
+
+    <!-- ArcGIS JavaScript CSS -->
+    <link rel="stylesheet" href="https://js.arcgis.com/4.24/esri/themes/light/main.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+</head>
+<style>
+    html,
+    body {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+    }
+
+    #container {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        display: flex;
+        flex-direction: row;
+    }
+
+    #sidebar {
+        padding: 5px;
+        height: 100%;
+        width: 20%;
+    }
+
+    #content {
+        padding: 0px;
+        height: 100%;
+        width: 80%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #tableDiv {
+        padding: 5px;
+        height: 25%;
+        width: 100%;
+    }
+
+    #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 75%;
+        width: 100%;
+    }
+</style>
+
+<body>
+    <div id="container">
+        <div id="sidebar">
+            <h2>Highlight Feature by Type</h2>
+            <label for="buildingType">Building Types</label>
+            <select id="buildingType" class="form-control mb-2"></select>
+            <button id="highlightButton" class="btn btn-primary mb-2">Highlight</button>
+        </div>
+        <div id="content">
+            <div id="viewDiv"></div>
+            <div id="tableDiv"> </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+    <!-- ArcGIS JavaScript Library -->
+    <script src="https://js.arcgis.com/4.24/"></script>
+    <script>
+        // Load the Map and MapView modules
+        require([
+            "esri/Map",
+            "esri/views/MapView",
+            "esri/widgets/LayerList",
+            "esri/layers/FeatureLayer",
+            "esri/widgets/FeatureTable",
+            "esri/core/reactiveUtils",
+            "esri/widgets/Editor",
+            "esri/widgets/Legend",
+            "esri/smartMapping/renderers/type",
+            "esri/smartMapping/statistics/uniqueValues"
+        ], function (
+            Map,
+            MapView,
+            LayerList,
+            FeatureLayer,
+            FeatureTable,
+            reactiveUtils,
+            Editor,
+            Legend,
+            typeRendererCreator,
+            uniqueValues
+        ) {
+            // Create a Map instance
+            const myMap = new Map({
+                basemap: "streets-vector"
+            });
+
+            // Create a MapView instance (for 2D viewing) and reference the map instance
+            const view = new MapView({
+                container: "viewDiv",
+                map: myMap,
+                zoom: 12, // Sets zoom level based on level of detail (LOD)
+                center: [101.70979, 3.15283] // Sets center point of view using longitude,latitude
+            });
+
+            // Create LayerList instance
+            const layerList = new LayerList({
+                view: view,
+            });
+
+            // Add LayerList into MapView
+            view.ui.add(layerList, "top-right");
+
+            // Create Editor instancve
+            const editor = new Editor({
+                view: view,
+            });
+
+            view.ui.add(editor, "top-right");
+
+            // Crate Legend instance
+            const legend = new Legend({
+                view: view,
+                style: "card"
+            });
+
+            view.ui.add(legend, "top-left");
+
+            // Create popup template object
+            const popupTemplate = {
+                "title": "Building", // Header
+                "content": [
+                    {
+                        type: "fields",
+                        fieldInfos: [
+                            {
+                                fieldName: "name",
+                                label: "Name"
+                            },
+                            {
+                                fieldName: "type",
+                                label: "Type"
+                            }
+                        ]
+                    }
+                ]
+            }
+
+            // Add Feature Layer
+            const featureLayer = new FeatureLayer({
+                url: "https://vm.map2u.com.my/server/rest/services/Hosted/Kuala_Lumpur_Building/FeatureServer/0",
+                popupTemplate: popupTemplate,
+            });
+
+            // Create FeatureTable instance
+            const featureTable = new FeatureTable({
+                view: view,
+                container: document.getElementById("tableDiv"),
+                layer: featureLayer,
+            });
+
+            // Add feature table filter based MapView 
+            featureLayer.watch("loaded", function (event) {
+                reactiveUtils.when(function () {
+                    return view.stationary === false;
+                }, function () {
+                    if (view.extent) {
+                        featureTable.filterGeometry = view.extent;
+                    }
+                });
+            });
+
+            // Create SmartMapping renderer parameter object
+            const typeParams = {
+                layer: featureLayer, // Layer instance
+                view: view, // MapView instance,
+                field: "type", // Layer field
+                legendOptions: {
+                    title: "Building Types"
+                }
+            }
+
+            // Run SmartMapping Renderer
+            typeRendererCreator.createRenderer(typeParams)
+                .then((response) => {
+                    featureLayer.renderer = response.renderer;
+
+                    if (!myMap.layers.includes(featureLayer)) {
+                        myMap.add(featureLayer);
+                    }
+                })
+                .catch((error) => {
+                    console.error("there was an error: ", error);
+                });
+
+
+            // Get the elements related to 
+            const buildingTypeInput = document.getElementById("buildingType");
+            const highlightButton = document.getElementById("highlightButton");
+
+            // Using uniqueValues, we will get the list of distinct value in layer field
+            uniqueValues({
+                layer: featureLayer,
+                field: "type"
+            }).then(function (response) {
+                let values = response.uniqueValueInfos;
+
+                values.forEach(function (info) {
+                    let option = document.createElement("option");
+                    option.value = info.value;
+                    option.text = info.value;
+
+                    buildingTypeInput.add(option);
+                })
+            });
+
+            // Add event listener to filter button.
+            highlightButton.addEventListener("click", highlightBuildingType);
+
+            // highlight object
+            let highlightedObject;
+
+            function highlightBuildingType() {
+                // Get selected building type
+                let buildingType = buildingTypeInput.value;
+
+                // Create Filter parameters
+                let query = featureLayer.createQuery();
+                query.where = `type = '${buildingType}'`;
+
+                // Get object ids of features
+                featureLayer.queryObjectIds(query)
+                    .then(function (response) {
+                        if (highlightedObject) {
+                            highlightedObject.remove();
+                        }
+                        view.whenLayerView(featureLayer)
+                            .then(function (layer) {
+                                highlightedObject = layer.highlight(response)
+                            });
+                    });
+            }
+
+        });
+    </script>
+</body>
+
+</html>
