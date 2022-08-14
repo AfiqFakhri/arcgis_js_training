@@ -57,10 +57,13 @@
 <body>
     <div id="container">
         <div id="sidebar">
-            <h2>Highlight Feature by Type</h2>
-            <label for="buildingType">Building Types</label>
-            <select id="buildingType" class="form-control mb-2"></select>
-            <button id="highlightButton" class="btn btn-primary mb-2">Highlight</button>
+            <h2>Select Features Using Buffer</h2>
+            <label for="bufferRadius">Radius (KM)</label>
+            <input input="type" id="bufferRadius" class="form-control mb-2"></input>
+            <button id="bufferSelectButton" class="btn btn-primary mb-2">Select</button>
+            <button id="bufferClearButton" class="btn btn-danger mb-2">Clear</button>
+            <h6>Building Types: </h6>
+            <div id="buildingTypeResult"></div>
         </div>
         <div id="content">
             <div id="viewDiv"></div>
@@ -85,7 +88,8 @@
             "esri/widgets/Editor",
             "esri/widgets/Legend",
             "esri/smartMapping/renderers/type",
-            "esri/smartMapping/statistics/uniqueValues"
+            "esri/geometry/Circle",
+            "esri/Graphic",
         ], function (
             Map,
             MapView,
@@ -96,7 +100,8 @@
             Editor,
             Legend,
             typeRendererCreator,
-            uniqueValues
+            Circle,
+            Graphic,
         ) {
             // Create a Map instance
             const myMap = new Map({
@@ -167,17 +172,6 @@
                 layer: featureLayer,
             });
 
-            // Add feature table filter based MapView 
-            featureLayer.watch("loaded", function(event) {
-                reactiveUtils.when(function(){
-                    return view.stationary === false;
-                }, function() {
-                    if(view.extent) {
-                        featureTable.filterGeometry = view.extent;
-                    }
-                });
-            });
-
             // Create SmartMapping renderer parameter object
             const typeParams = {
                 layer: featureLayer, // Layer instance
@@ -201,65 +195,97 @@
                     console.error("there was an error: ", error);
                 });
 
-
-            // Get the elements related to 
-            const buildingTypeInput = document.getElementById("buildingType");
-            const highlightButton = document.getElementById("highlightButton");
-
-            // Using uniqueValues, we will get the list of distinct value in layer field
-            uniqueValues({
-                layer: featureLayer,
-                field: "type"
-            }).then(function (response) {
-                let values = response.uniqueValueInfos;
-
-                values.forEach(function (info) {
-                    let option = document.createElement("option");
-                    option.value = info.value;
-                    option.text = info.value;
-
-                    buildingTypeInput.add(option);
-                })
-            });
-
-            // Add event listener to filter button.
-            highlightButton.addEventListener("click", highlightBuildingType);
-
-            // highlight object
-            let highlightedObject;
-
-            function highlightBuildingType() {
-                // Get selected building type
-                let buildingType = buildingTypeInput.value;
-
-                // Create Filter parameters
-                let query = featureLayer.createQuery();
-                query.where = `type = '${buildingType}'`;
-
-                // Get object ids of features
-                featureLayer.queryObjectIds(query)
-                    .then(function (response) {
-                        if (highlightedObject) {
-                            highlightedObject.remove();
-                        }
-                        view.whenLayerView(featureLayer)
-                            .then(function (layer) {
-                                highlightedObject = layer.highlight(response)
-                            });
-                    });
-            }
-
             // Selecting Feature on MapView
-            // Add event listener on Mapview. The event is click
-            view.on("click", function(event) {
-                view.hitTest(event)
-                    .then(function(response) {
-                        console.log(response);
-                    });
+            // Get related elements
+            const bufferRadius = document.getElementById("bufferRadius");
+            const bufferSelectButton = document.getElementById("bufferSelectButton");
+            const bufferClearButton = document.getElementById("bufferClearButton");
+            const buildingTypeResult = document.getElementById("buildingTypeResult");
+
+            // Add event listener to toggle selectButton switch
+            let selectButton = false;
+
+            bufferSelectButton.addEventListener("click", function () {
+                selectButton = !selectButton;
             });
 
-            
-            
+            // Circle Geometry 
+            let circleGraphic = null;
+
+            // Add event listener to toggle clearButton
+            bufferClearButton.addEventListener("click", function () {
+                selectButton = false;
+                view.graphics.remove(circleGraphic);
+                circleGraphic = null;
+                featureTable.clearSelection();
+            });
+
+            // Add event listener on Mapview. The event is click
+            view.on("click", function (event) {
+                if (selectButton) {
+                    selectButton = false;
+
+                    // Get coordinate from event
+                    let longitude = event.mapPoint.longitude;
+                    let latitude = event.mapPoint.latitude;
+
+                    // Get radius from input
+                    let circleRadius = bufferRadius.value
+
+                    if (circleRadius == "") { // If not set, default will be 1KM
+                        circleRadius = 1;
+                    }
+
+                    // Create circle graphic
+                    circleGeometry = new Circle({
+                        center: [longitude, latitude],
+                        radius: circleRadius,
+                        radiusUnit: "kilometers"
+                    });
+
+                    // Add circle graphic into MapView
+                    circleGraphic = new Graphic({
+                        geometry: circleGeometry,
+                        symbol: {
+                            type: "simple-fill",
+                            style: "none",
+                            outline: {
+                                width: 4,
+                                color: "black"
+                            }
+                        }
+                    });
+
+                    view.graphics.add(circleGraphic);
+
+                    // Create query parameters
+                    const query = {
+                        geometry: circleGeometry,
+                    }
+
+                    // Query the feature layer
+                    featureLayer.queryFeatures(query)
+                        .then(function (response) {
+                            if (response.features.length === 0) {
+                                featureTable.clearSelection();
+                            } else {
+                                featureTable.filterGeometry = circleGeometry;
+                                featureTable.selectRows(response.features);
+                            }
+                        });
+                }
+            });
+
+            // Add feature table filter based MapView 
+            featureLayer.watch("loaded", function (event) {
+                reactiveUtils.when(function () {
+                    return view.stationary === false && circleGraphic === null;
+                }, function () {
+                    if (view.extent) {
+                        featureTable.filterGeometry = view.extent;
+                    }
+                });
+            });
         });
     </script>
 </body>
