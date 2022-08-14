@@ -54,7 +54,7 @@
             "esri/widgets/LayerList",
             "esri/layers/FeatureLayer",
             "esri/widgets/FeatureTable",
-            "esri/widgets/FeatureTable",
+            "esri/core/reactiveUtils",
             "esri/widgets/Editor",
             "esri/widgets/Legend"
         ], function (
@@ -62,7 +62,7 @@
             MapView,
             LayerList,
             FeatureLayer,
-            FeatureTable,   
+            FeatureTable,
             reactiveUtils,
             Editor,
             Legend
@@ -95,7 +95,7 @@
 
             view.ui.add(editor, "top-right");
 
-            // Crate Legend instance
+            // Create Legend instance
             const legend = new Legend({
                 view: view,
                 style: "card"
@@ -140,11 +140,11 @@
             });
 
             // Add feature table filter based MapView 
-            featureLayer.watch("loaded", function(event) {
-                reactiveUtils.when(function(){
+            featureLayer.watch("loaded", function (event) {
+                reactiveUtils.when(function () {
                     return view.stationary === false;
-                }, function() {
-                    if(view.extent) {
+                }, function () {
+                    if (view.extent) {
                         featureTable.filterGeometry = view.extent;
                     }
                 });
