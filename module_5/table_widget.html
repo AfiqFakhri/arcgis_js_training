@@ -119,13 +119,13 @@
                 container: document.getElementById("tableDiv"),
                 layer: featureLayer,
             });
-            
+
             // Add feature table filter based MapView 
-            featureLayer.watch("loaded", function(event) {
-                reactiveUtils.when(function(){
+            featureLayer.watch("loaded", function (event) {
+                reactiveUtils.when(function () {
                     return view.stationary === false;
-                }, function() {
-                    if(view.extent) {
+                }, function () {
+                    if (view.extent) {
                         featureTable.filterGeometry = view.extent;
                     }
                 });
