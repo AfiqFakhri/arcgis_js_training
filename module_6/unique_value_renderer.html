@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <Title>ArcGIS API for JavaScript Tutorial</Title>
+
+    <!-- ArcGIS JavaScript CSS -->
+    <link rel="stylesheet" href="https://js.arcgis.com/4.24/esri/themes/light/main.css">
+</head>
+<style>
+    html,
+    body {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+    }
+
+    #container {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #tableDiv {
+        padding: 5px;
+        height: 25%;
+        width: 100%;
+    }
+
+    #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 75%;
+        width: 100%;
+    }
+</style>
+
+<body>
+    <div id="container">
+        <div id="viewDiv"></div>
+        <div id="tableDiv"> </div>
+    </div>
+
+    <!-- ArcGIS JavaScript Library -->
+    <script src="https://js.arcgis.com/4.24/"></script>
+    <script>
+        // Load the Map and MapView modules
+        require([
+            "esri/Map",
+            "esri/views/MapView",
+            "esri/widgets/LayerList",
+            "esri/layers/FeatureLayer",
+            "esri/widgets/FeatureTable",
+            "esri/core/reactiveUtils",
+            "esri/widgets/Editor",
+            "esri/renderers/UniqueValueRenderer"
+        ], function (
+            Map,
+            MapView,
+            LayerList,
+            FeatureLayer,
+            FeatureTable,
+            reactiveUtils,
+            Editor,
+            UniqueValueRenderer
+        ) {
+            // Create a Map instance
+            const myMap = new Map({
+                basemap: "streets-vector"
+            });
+
+            // Create a MapView instance (for 2D viewing) and reference the map instance
+            const view = new MapView({
+                container: "viewDiv",
+                map: myMap,
+                zoom: 12, // Sets zoom level based on level of detail (LOD)
+                center: [101.70979, 3.15283] // Sets center point of view using longitude,latitude
+            });
+
+            // Create LayerList instance
+            const layerList = new LayerList({
+                view: view,
+            });
+
+            // Add LayerList into MapView
+            view.ui.add(layerList, "top-right");
+
+            // Create Editor instancve
+            const editor = new Editor({
+                view: view,
+            });
+
+            view.ui.add(editor, "top-right");
+
+            // Create popup template object
+            const popupTemplate = {
+                "title": "Building", // Header
+                "content": [
+                    {
+                        type: "fields",
+                        fieldInfos: [
+                            {
+                                fieldName: "name",
+                                label: "Name"
+                            },
+                            {
+                                fieldName: "type",
+                                label: "Type"
+                            }
+                        ]
+                    }
+                ]
+            }
+
+            // Create Renderer object for feature layer
+            let nullRenderer = {
+                type: "unique-value",
+                valueExpression: "When($feature.name == ' ' && $feature.type == ' ', 'both', $feature.name == ' ', 'name', $feature.type == ' ', 'type', 'complete')",
+                uniqueValueInfos: [
+                    {
+                        value: "both",
+                        symbol: {
+                            type: "simple-fill",
+                            color: "red"
+                        }
+                    },
+                    {
+                        value: "name",
+                        symbol: {
+                            type: "simple-fill",
+                            color: "yellow"
+                        }
+                    },
+                    {
+                        value: "type",
+                        symbol: {
+                            type: "simple-fill",
+                            color: "orange"
+                        }
+                    },
+                    {
+                        value: "complete",
+                        symbol: {
+                            type: "simple-fill",
+                            color: "green"
+                        }
+                    },
+                ]
+            }
+
+            // Add Feature Layer
+            const featureLayer = new FeatureLayer({
+                url: "https://vm.map2u.com.my/server/rest/services/Hosted/Kuala_Lumpur_Building/FeatureServer/0",
+                popupTemplate: popupTemplate,
+                renderer: nullRenderer
+            });
+
+            // Add feature layer to map
+            myMap.add(featureLayer);
+
+            // Create FeatureTable instance
+            const featureTable = new FeatureTable({
+                view: view,
+                container: document.getElementById("tableDiv"),
+                layer: featureLayer,
+            });
+
+            // Add feature table filter based MapView 
+            featureLayer.watch("loaded", function (event) {
+                reactiveUtils.when(function () {
+                    return view.stationary === false;
+                }, function () {
+                    if (view.extent) {
+                        featureTable.filterGeometry = view.extent;
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>
