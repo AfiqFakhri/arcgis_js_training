@@ -93,9 +93,30 @@
 
             view.ui.add(editor, "top-right");
 
+            // Create popup template object
+            const popupTemplate = {
+                "title": "Building", // Header
+                "content": [
+                    {
+                        type: "fields",
+                        fieldInfos: [
+                            {
+                                fieldName: "name",
+                                label: "Name"
+                            },
+                            {
+                                fieldName: "type",
+                                label: "Type"
+                            }
+                        ]
+                    }
+                ]
+            }
+
             // Add Feature Layer
             const featureLayer = new FeatureLayer({
-                url: "https://vm.map2u.com.my/server/rest/services/Hosted/Kuala_Lumpur_Building/FeatureServer/0"
+                url: "https://vm.map2u.com.my/server/rest/services/Hosted/Kuala_Lumpur_Building/FeatureServer/0",
+                popupTemplate: popupTemplate,
             });
 
             // Add feature layer to map
