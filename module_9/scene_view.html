@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <Title>ArcGIS API for JavaScript Tutorial</Title>
+
+    <!-- ArcGIS JavaScript CSS -->
+    <link rel="stylesheet" href="https://js.arcgis.com/4.24/esri/themes/light/main.css">
+</head>
+<style>
+    html,
+    body,
+    #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+    }
+</style>
+
+<body>
+    <div id="viewDiv"></div>
+
+    <!-- ArcGIS JavaScript Library -->
+    <script src="https://js.arcgis.com/4.24/"></script>
+    <script>
+        // Load the Map and SceneView modules
+        require([
+            "esri/config",
+            "esri/Map",
+            "esri/views/SceneView",
+        ],
+            function (
+                esriConfig,
+                Map,
+                SceneView
+            ) {
+                esriConfig.apiKey = "AAPKa29cc2d95267475db0def822c555c63bZC8ZIlWPkM8VQIfNHj0KJw7ndgufmdvpSfC7ZrWNvudDVqNn_pwtD3cDVAo58bv3"
+
+                // Create a Map instance
+                const myMap = new Map({
+                    basemap: "arcgis-topographic",
+                    ground: "world-elevation"
+                });
+
+                // Create a SceneView instance (for 3D viewing) and reference the map instance
+                const view = new SceneView({
+                    container: "viewDiv",
+                    map: myMap,
+                    camera: {
+                        position: {
+                            x: 101.69106, // Longitude
+                            y: 2.93518, // Latitude
+                            z: 2000 // Meters
+                        },
+                        tilt: 75 // Angle
+                    }
+                });
+            });
+    </script>
+</body>
+
+</html>
