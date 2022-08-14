@@ -54,6 +54,7 @@
             "esri/widgets/LayerList",
             "esri/layers/FeatureLayer",
             "esri/widgets/FeatureTable",
+            "esri/core/reactiveUtils",
             "esri/widgets/Editor",
         ], function (
             Map,
@@ -61,6 +62,7 @@
             LayerList,
             FeatureLayer,
             FeatureTable,
+            reactiveUtils,
             Editor
         ) {
             // Create a Map instance
@@ -104,6 +106,17 @@
                 view: view,
                 container: document.getElementById("tableDiv"),
                 layer: featureLayer,
+            });
+
+            // Add feature table filter based MapView 
+            featureLayer.watch("loaded", function(event) {
+                reactiveUtils.when(function(){
+                    return view.stationary === false;
+                }, function() {
+                    if(view.extent) {
+                        featureTable.filterGeometry = view.extent;
+                    }
+                });
             });
         });
     </script>

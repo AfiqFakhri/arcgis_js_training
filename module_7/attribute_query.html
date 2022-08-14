@@ -81,6 +81,7 @@
             "esri/widgets/LayerList",
             "esri/layers/FeatureLayer",
             "esri/widgets/FeatureTable",
+            "esri/core/reactiveUtils",
             "esri/widgets/Editor",
             "esri/widgets/Legend",
             "esri/smartMapping/renderers/type",
@@ -91,6 +92,7 @@
             LayerList,
             FeatureLayer,
             FeatureTable,
+            reactiveUtils,
             Editor,
             Legend,
             typeRendererCreator,
@@ -137,12 +139,22 @@
                 url: "https://vm.map2u.com.my/server/rest/services/Hosted/Kuala_Lumpur_Building/FeatureServer/0"
             });
 
-
             // Create FeatureTable instance
             const featureTable = new FeatureTable({
                 view: view,
                 container: document.getElementById("tableDiv"),
                 layer: featureLayer,
+            });
+
+            // Add feature table filter based MapView 
+            featureLayer.watch("loaded", function(event) {
+                reactiveUtils.when(function(){
+                    return view.stationary === false;
+                }, function() {
+                    if(view.extent) {
+                        featureTable.filterGeometry = view.extent;
+                    }
+                });
             });
 
             // Create SmartMapping renderer parameter object

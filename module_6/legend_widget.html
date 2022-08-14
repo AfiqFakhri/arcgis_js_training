@@ -54,6 +54,7 @@
             "esri/widgets/LayerList",
             "esri/layers/FeatureLayer",
             "esri/widgets/FeatureTable",
+            "esri/widgets/FeatureTable",
             "esri/widgets/Editor",
             "esri/widgets/Legend"
         ], function (
@@ -61,7 +62,8 @@
             MapView,
             LayerList,
             FeatureLayer,
-            FeatureTable,
+            FeatureTable,   
+            reactiveUtils,
             Editor,
             Legend
         ) {
@@ -101,7 +103,6 @@
 
             view.ui.add(legend, "top-left");
 
-
             // Add Feature Layer
             const featureLayer = new FeatureLayer({
                 url: "https://vm.map2u.com.my/server/rest/services/Hosted/Kuala_Lumpur_Building/FeatureServer/0"
@@ -117,6 +118,16 @@
                 layer: featureLayer,
             });
 
+            // Add feature table filter based MapView 
+            featureLayer.watch("loaded", function(event) {
+                reactiveUtils.when(function(){
+                    return view.stationary === false;
+                }, function() {
+                    if(view.extent) {
+                        featureTable.filterGeometry = view.extent;
+                    }
+                });
+            });
         });
     </script>
 </body>
